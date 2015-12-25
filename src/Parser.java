@@ -1,11 +1,9 @@
-package parser;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import java.util.TreeMap;
-
-import org.omg.Messaging.SyncScopeHelper;
 
 public class Parser {
 

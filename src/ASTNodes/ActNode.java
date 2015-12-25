@@ -6,23 +6,34 @@ import Visitor.Visitor;
  * @author Curcudel Ioan-Razvan<razvanionutz13@yahoo.com>
  */
 
-public class ActNode extends ASTNode{
+public class ActNode extends ASTNode {
 
-	public String name;
-	
+	private String name;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param name
+	 *            numarul actului
+	 */
+
 	public ActNode(String name) {
 		super("ActNode");
 		this.name = name;
 	}
-	
+
+	/**
+	 * 
+	 * @return numarul actului
+	 */
+
 	public String getName() {
 		return name;
 	}
 
 	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+	public int accept(Visitor v) {
+		return v.visit(this);
 	}
-	
-}
 
+}

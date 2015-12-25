@@ -11,43 +11,64 @@ import Visitor.Visitor;
 
 public abstract class ASTNode implements Visitable {
 
-	public ArrayList<ASTNode>	children;	// change to protected
-	protected String			type;
-	protected int				value;
-	public ASTNode				parent;
-	public int					depth	= 0;
+	protected ArrayList<ASTNode>	children;
+	protected String				type;
+	private int						depth	= 0;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param type
+	 *            tipul nodului
+	 */
 	public ASTNode(String type) {
 		children = new ArrayList<>();
 		this.type = type;
 	}
 
+	/**
+	 * Adauga un nou nod la lista de adiacenta
+	 * 
+	 * @param child
+	 *            nodul care trebuie adaugat
+	 */
 	public void addChild(ASTNode child) {
 		children.add(child);
 	}
 
+	/**
+	 * @return tipul nodului
+	 */
 	public String getType() {
 		return type;
 	}
 
 	/**
-	 * @return the value
+	 * @return lista de adiacenta
 	 */
-	public int getValue() {
-		return value;
+	public ArrayList<ASTNode> getChildren() {
+		return children;
 	}
 
 	/**
+	 * 
 	 * @param value
-	 *            the value to set
+	 *            adancimea la care se gaseste nodul in arbore
 	 */
-	public void setValue(int value) {
-		this.value = value;
+	public void setDepth(int value) {
+		depth = value;
+	}
+
+	/**
+	 * @return adancimea la care se afla nodul in arbore
+	 */
+	public int getDepth() {
+		return depth;
 	}
 
 	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+	public int accept(Visitor v) {
+		return v.visit(this);
 	}
 
 }

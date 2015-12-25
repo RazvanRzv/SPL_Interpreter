@@ -1,6 +1,5 @@
 package ASTNodes;
 
-import Visitor.ASTVisitor;
 import Visitor.Visitor;
 
 /**
@@ -9,13 +8,41 @@ import Visitor.Visitor;
 
 public class RvalNode extends ASTNode {
 
+	private String	charName;
+	private int		value;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param charName
+	 *            numele personajului
+	 */
 	public RvalNode(String charName) {
 		super("RValNode " + charName);
-	}
-	
-	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+		this.charName = charName;
+		value = 0;
 	}
 
+	@Override
+	public int accept(Visitor v) {
+		return v.visit(this);
+	}
+
+	/**
+	 * 
+	 * @return numele personajului
+	 */
+
+	public String getCharName() {
+		return charName;
+	}
+
+	/**
+	 * 
+	 * @return valoarea personajului
+	 */
+
+	public int getValue() {
+		return value;
+	}
 }

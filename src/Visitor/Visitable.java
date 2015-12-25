@@ -6,6 +6,6 @@ package Visitor;
 
 public interface Visitable {
 
-	public void accept(Visitor v);
+	public int accept(Visitor v);
 
 }

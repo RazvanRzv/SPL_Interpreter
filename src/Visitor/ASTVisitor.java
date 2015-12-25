@@ -90,10 +90,6 @@ public class ASTVisitor implements Visitor {
 		removeTab();
 	}
 
-	@Override
-	public void visit(CharacterNode node) {
-		// What TO DO here ?
-	}
 
 	@Override
 	public void visit(ConstantNode node) {

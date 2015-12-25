@@ -1,6 +1,5 @@
 package ASTNodes;
 
-import Visitor.ASTVisitor;
 import Visitor.Visitor;
 
 /**
@@ -9,20 +8,30 @@ import Visitor.Visitor;
 
 public class SceneNode extends ASTNode {
 
-	public String name; // make it private
+	private String name;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param name
+	 *            numarul scenei
+	 */
 	public SceneNode(String name) {
 		super("SceneNode");
 		this.name = name;
 	}
 
+	/**
+	 * 
+	 * @return numarul scenei
+	 */
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+	public int accept(Visitor v) {
+		return v.visit(this);
 	}
 
 }

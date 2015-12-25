@@ -1,6 +1,8 @@
-package parser;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Stack;
@@ -22,34 +24,38 @@ import ASTNodes.RvalNode;
 import ASTNodes.SceneNode;
 import ASTNodes.SquareNode;
 import ASTNodes.SumNode;
-import Visitor.ASTVisitor;
-import Visitor.Printer;
+import Visitor.OutputPrinter;
 import Visitor.TreeVisitor;
-import parser.Parser.Token;
 
 public class Interpreter {
 
-	static ProgramNode			pN				= new ProgramNode();	// change
-																		// from
-																		// static
-	Token						token			= null;
-	int							actIndex		= -1;
-	int							sceneIndex		= -1;
-	Parser						parser			= null;
-	HashMap<String, Integer>	charsOnStage	= new HashMap<>();
-	HashMap<String, Integer>	characters		= new HashMap<>();
-	String						speaking		= null;
-	String						notSpeaking		= null;
+	private Parser.Token				token			= null;
+	private int							actIndex		= -1;
+	private int							sceneIndex		= -1;
+	private Parser						parser			= null;
+	private HashMap<String, Integer>	charsOnStage	= new HashMap<>();
+	private HashMap<String, Integer>	characters		= new HashMap<>();
+	private String						speaking;
+	private String						notSpeaking;
 
+	/**
+	 * Constructor
+	 */
 	Interpreter() {}
 
-	int i = 0;
+	/**
+	 * Metoda ce construieste arborele sintactic
+	 * 
+	 * @param pN
+	 *            radacina arborelui sintactic
+	 * @param testNumber
+	 *            numarul testului
+	 */
+	public void parse(ProgramNode pN, int testNumber) {
 
-	// TODO
-	void parse() {
-		String polishForm = "";
 		try {
-			parser = new Parser("wordlists", "test8.spl");
+			parser = new Parser("wordlists",
+					"tests/test" + testNumber + ".spl");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -64,9 +70,6 @@ public class Interpreter {
 		}
 
 		while (token != null) {
-
-			// System.out.println(token);
-
 			if (token.type == TYPE.keyword) {
 				String value = token.value;
 				switch (value) {
@@ -74,11 +77,14 @@ public class Interpreter {
 						ActNode act = new ActNode(parser.getNext().value);
 						pN.addChild(act);
 						actIndex++;
-						sceneIndex = 0;
+						sceneIndex = -1; // resetam numaratoarea scenelor in
+											// cazul unui nou act
 						break;
 					case "Scene":
-						SceneNode scene = new SceneNode(parser.getNext().value);
-						pN.children.get(actIndex).addChild(scene);
+						if ((token = parser.getNext()).type == TYPE.terminator)
+							break;
+						SceneNode scene = new SceneNode(token.value);
+						pN.getChildren().get(actIndex).addChild(scene);
 						sceneIndex++;
 						break;
 					case "[":
@@ -101,7 +107,6 @@ public class Interpreter {
 								charsOnStage.remove(charOut);
 								break;
 							case "Exeunt":
-								// TO DO Exeunt one char
 								for (Entry<String, Integer> entry : charsOnStage
 										.entrySet()) {
 									characters.put(entry.getKey(),
@@ -123,9 +128,17 @@ public class Interpreter {
 					}
 				}
 			}
+
 			if (token.type == TYPE.second_person) {
-				SceneNode currentScene = (SceneNode) pN.children
-						.get(actIndex).children.get(sceneIndex - 1);
+
+				if (speaking == null || notSpeaking == null) {
+					token = parser.getNext();
+					continue;
+				}
+
+				// adaugarea se face la scena curenta
+				SceneNode currentScene = (SceneNode) pN.getChildren()
+						.get(actIndex).getChildren().get(sceneIndex);
 
 				AssignmentNode asgnNode = new AssignmentNode();
 				currentScene.addChild(asgnNode);
@@ -133,8 +146,9 @@ public class Interpreter {
 
 				token = parser.getNext();
 
-				polishForm = "";
+				String polishForm = "";
 
+				// construim forma poloneza a replicii
 				while (token.type != TYPE.terminator) {
 					if (token.type == TYPE.math) {
 						String operator = token.value;
@@ -186,19 +200,19 @@ public class Interpreter {
 							|| token.type == TYPE.negative_adjective) {
 						token = parser.getNext();
 						if (token.type != TYPE.irelevant) {
-							int constant = addConstant();
+							int constant = getConstant();
 							polishForm += constant + " ";
 						}
 					}
 					token = parser.getNext();
 				} // finish terminator
-					// System.out.println(polishForm);
-				asgnNode.children.add(evaluatePolishForm(polishForm));
+					// adaugam radacina formei poloneze la dreapta egalului
+				asgnNode.getChildren().add(evaluatePolishForm(polishForm));
 			} // finish second_person
 
 			if (token.type == TYPE.speak) {
-				SceneNode currentScene = (SceneNode) pN.children
-						.get(actIndex).children.get(sceneIndex - 1);
+				SceneNode currentScene = (SceneNode) pN.getChildren()
+						.get(actIndex).getChildren().get(sceneIndex);
 				if (token.value.equals("Speak")) {
 					currentScene.addChild(new CharOutputNode(notSpeaking));
 				}
@@ -212,9 +226,17 @@ public class Interpreter {
 
 	}
 
-	public ASTNode evaluatePolishForm(String polishForm) {
+	/**
+	 * Creeaza arborele corespunzator formei poloneze
+	 * 
+	 * @param polishForm
+	 *            forma poloneza
+	 * @return radacina arborelui
+	 */
+	private ASTNode evaluatePolishForm(String polishForm) {
 		Stack<OperatorNode> stack = new Stack<>();
-		String[] pTokens = polishForm.split("\\s+");
+		String[] pTokens = polishForm.split("\\s+"); // separam termenii formei
+														// poloneze
 		OperatorNode currentNode = null;
 		try {
 			int constant = Integer.parseInt(pTokens[0]);
@@ -262,9 +284,9 @@ public class Interpreter {
 
 						break;
 				}
-				while (currentNode.maxChildren == currentNode.children.size()
-						&& stack.size() > 1) { // size > 1 pt ca primulelement
-												// va fi null
+				// size > 1 deoarece primul element este null
+				while (currentNode.getMaxChildren() == currentNode.getChildren()
+						.size() && stack.size() > 1) {
 					OperatorNode temp = stack.pop();
 					temp.addChild(currentNode);
 					currentNode = temp;
@@ -273,21 +295,15 @@ public class Interpreter {
 			}
 
 		}
-
 		return currentNode;
 	}
 
-	public static void print(ASTNode root, int tabs) {
-		System.out.println(root.getType());
-		for (int i = 0; i < root.children.size(); i++) {
-			for (int j = 0; j < tabs; j++) {
-				System.out.print("\t");
-			}
-			print(root.children.get(i), tabs + 1);
-		}
-	}
-
-	public int addConstant() {
+	/**
+	 * Evalueaza o insiruire de adjective si un substantiv
+	 * 
+	 * @return valoarea insiruirii
+	 */
+	private int getConstant() {
 		int noOfShifts = 1;
 		int sign = 1;
 		while (token.type == TYPE.positive_adjective
@@ -304,22 +320,47 @@ public class Interpreter {
 			sign = -1;
 		} else
 			sign = 1;
-		
+
 		return (1 << noOfShifts) * sign;
 
 	}
 
-	public static void main(String[] args) {
-		Interpreter inter = new Interpreter();
-		ASTVisitor visitor = new ASTVisitor(null);
-		inter.parse();
-		// visitor.visit(pN);
-		TreeVisitor treeVisitor = new TreeVisitor(new Printer());
-		treeVisitor.visit(pN);
-		// ASTNode x = inter.evaluatePolishForm("/ / * - + 1 2 + + 8 2 + 8 + 1 2
-		// - + - 8 1 - 8 2 - Balthazar 4194304 / + 8 1 - 4 1 ^3 -1 ");
-		// System.out.println(x.children.get(0).children.get(0).children.get(1));
+	/**
+	 * Functia de testare
+	 */
+	public static void doThings() {
+		for (int i = 1; i <= 10; i++) {
 
+			Interpreter interpreter = new Interpreter();
+			ProgramNode pN = new ProgramNode();
+			interpreter.parse(pN, i);
+
+			PrintWriter astPrinter = null;
+			try {
+				astPrinter = new PrintWriter(
+						new File("output/test" + i + ".ast"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			new TreeVisitor(astPrinter).visit(pN);
+			astPrinter.close();
+
+			PrintWriter outputPrinter = null;
+			try {
+				outputPrinter = new PrintWriter(
+						new File("output/test" + i + ".out"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			new OutputPrinter(interpreter.characters, outputPrinter).visit(pN);
+			outputPrinter.close();
+
+		}
+
+	}
+
+	public static void main(String[] args) {
+		doThings();
 	}
 
 }

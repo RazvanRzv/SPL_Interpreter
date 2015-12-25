@@ -1,22 +1,39 @@
 package ASTNodes;
 
-import Visitor.ASTVisitor;
 import Visitor.Visitor;
 
 /**
  * @author Curcudel Ioan-Razvan<razvanionutz13@yahoo.com>
  */
 
-public class LvalNode extends ASTNode{
+public class LvalNode extends ASTNode {
 
+	private String charName;
+
+	/**
+	 * Constructor
+	 * 
+	 * @param charName
+	 *            numele personajului
+	 */
+	
 	public LvalNode(String charName) {
 		super("LvalNode " + charName);
+		this.charName = charName;
 	}
-	
+
 	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+	public int accept(Visitor v) {
+		return v.visit(this);
+	}
+
+	/**
+	 * 
+	 * @return numele personajului
+	 */
+	
+	public String getChar() {
+		return charName;
 	}
 
 }
-

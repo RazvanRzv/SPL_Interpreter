@@ -3,7 +3,6 @@ package Visitor;
 import ASTNodes.ASTNode;
 import ASTNodes.ActNode;
 import ASTNodes.AssignmentNode;
-import ASTNodes.CharacterNode;
 import ASTNodes.ConstantNode;
 import ASTNodes.LvalNode;
 import ASTNodes.OperatorNode;
@@ -78,18 +77,13 @@ public class Printer implements Visitor {
 		System.out.println(node.getType());
 	}
 
-	@Override
-	public void visit(CharacterNode node) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public void visit(ConstantNode node) {
 		for (int i = 0; i < node.depth; i++) {
 			System.out.print("\t");
 		}
-		System.out.println(node.getType());
+		System.out.println(node.getType() + " " + node.getValue());
 	}
 
 	@Override

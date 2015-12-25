@@ -1,6 +1,5 @@
 package ASTNodes;
 
-import Visitor.ASTVisitor;
 import Visitor.Visitor;
 
 /**
@@ -9,13 +8,16 @@ import Visitor.Visitor;
 
 public class ProgramNode extends ASTNode{
 
+	/**
+	 * Constructor
+	 */
 	public ProgramNode() {
 		super("ProgramNode");
 	}
 	
 	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+	public int accept(Visitor v) {
+		return v.visit(this);
 	}
 }
 

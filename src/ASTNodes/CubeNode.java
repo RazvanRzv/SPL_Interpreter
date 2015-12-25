@@ -1,6 +1,5 @@
 package ASTNodes;
 
-import Visitor.ASTVisitor;
 import Visitor.Visitor;
 
 /**
@@ -9,13 +8,16 @@ import Visitor.Visitor;
 
 public class CubeNode extends OperatorNode{
 
+	/**
+	 * Constructor
+	 */
 	public CubeNode() {
 		super("CubeNode", 1);
 	}
 
 	@Override
-	public void accept(Visitor v) {
-		v.visit(this);
+	public int accept(Visitor v) {
+		return v.visit(this);
 	}
 
 }
